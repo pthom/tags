@@ -72,16 +72,16 @@ _.extend(Tags, {
           // this tag is already there so don't update
           return false;
 
-        // create an object to add tag to group 
+        // create an object to add tag to group
         // and also add group to tagGroups
         var updateOptions = {};
-        updateOptions.$addToSet = {};
-        updateOptions.$addToSet[tagGroupKey] = tagName;
+        updateOptions.$addToSet = [{}];
+        updateOptions.$addToSet[0][tagGroupKey] = tagName;
         if (!!tagGroup) {
-          updateOptions.$addToSet.tagGroups = tagGroup;
+          updateOptions.$addToSet[0].tagGroups = tagGroup;
         }
 
-        // if collection2 and attached schema use validate:false and create temp schema 
+        // if collection2 and attached schema use validate:false and create temp schema
         // so it isn't cleaned
         if (hasCollection2 && hasSimpleSchema && !!collection.simpleSchema()) {
           var tempSchema = {};
@@ -92,14 +92,14 @@ _.extend(Tags, {
           tempSchema.tagGroups = {
             type: [String],
             optional: true
-          };        
+          };
           var tempSimpleSchema = new SimpleSchema(tempSchema);
-          collection.attachSchema(tempSimpleSchema);    
+          collection.attachSchema(tempSimpleSchema);
           collection.update({_id:doc._id}, updateOptions, {validate: false});
         } else {
           collection.update({_id:doc._id}, updateOptions);
         }
-        
+
         return true;
       });//safe
 
@@ -145,7 +145,7 @@ _.extend(Tags, {
         }
 
         // if collection2 use validate:false
-        if (hasCollection2 && !!collection.simpleSchema()) { 
+        if (hasCollection2 && !!collection.simpleSchema()) {
           collection.update({_id:doc._id}, updateOptions, {validate: false});
         } else {
           collection.update({_id:doc._id}, updateOptions);
@@ -153,20 +153,20 @@ _.extend(Tags, {
 
         return true;
       });
-      // 
+      //
       if (nRefs) {
         var newNumRefs = nRefs - 1;
         Meteor.tags.update({
-          name: tagName, 
-          collection: collection._name, 
+          name: tagName,
+          collection: collection._name,
           group: tagGroup
         }, {
           $inc : { nRefs     : newNumRefs },
           $set : { changedAt : new Date() },
         });
-        
 
-      } 
+
+      }
     };
 
     // client methods
@@ -175,7 +175,7 @@ _.extend(Tags, {
       // if tagGroup is an object, then it's probably a selector object
       if (typeof tagGroup === 'object') {
         selector = tagGroup;
-        tagGroup = undefined; 
+        tagGroup = undefined;
       }
       Meteor.call(prefix + 'addTag', selector, tagName, tagGroup, function (err) {
         if (err) throw new Meteor.Error(500, 'Unable to add tag ' + tagName, err);
@@ -185,7 +185,7 @@ _.extend(Tags, {
     collection.removeTag = function (tagName, tagGroup, selector) {
       if (typeof tagGroup === 'object') {
         selector = tagGroup;
-        tagGroup = undefined; 
+        tagGroup = undefined;
       }
       Meteor.call(prefix + 'removeTag', selector, tagName, tagGroup, function (err) {
         if (err) throw new Meteor.Error(500, 'Unable to add tag ' + tagName, err);
